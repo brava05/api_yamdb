@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'users.apps.UsersConfig',
     'rest_framework.authtoken',
+    'reviews',
+    'api'
 
 ]
 
