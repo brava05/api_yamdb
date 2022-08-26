@@ -30,7 +30,7 @@ class AuthorAdminModeratorOrReadAndPost(permissions.BasePermission):
             return True
 
         if request.method == "POST":
-            return True
+            return request.user.is_authenticated
         
         if not request.user.is_authenticated:
             return False
