@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #Alex added
+    'rest_framework_simplejwt',
 
     # Rusl added
     'rest_framework',
