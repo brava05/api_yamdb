@@ -15,6 +15,8 @@ from .serializers import (
     UserSerializer
 )
 
+
+
 from api.permissions import AdminOnly
 
 from rest_framework import generics
@@ -37,9 +39,15 @@ class UserCreateViewSet(generics.CreateAPIView):
 
     def post(self, request):
         user = request.data
-
+        
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
+
+        username = user.get('username')
+        if username == 'me':
+            return Response("username не может быть me", status=status.HTTP_400_BAD_REQUEST)
+
+        # print(username)
 
         confirmation_code = get_random_string(length=32)
         send_mail(
@@ -52,7 +60,7 @@ class UserCreateViewSet(generics.CreateAPIView):
 
         serializer.save(confirmation_code=confirmation_code, role='user')
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class GetTokenView(TokenObtainSlidingView):
@@ -66,7 +74,7 @@ class ProfileView(APIView):
 
     def get(self, request):
         user = self.request.user
-        print(user)
+        #print(user)
         #request_author = self.request.user
         #request_username = request.data.get('username')
         #user = get_object_or_404(User, username=request_username)
@@ -75,14 +83,22 @@ class ProfileView(APIView):
 
     def patch(self, request):
         requested_user = self.request.user
-        print(requested_user)
+        print(requested_user.role)
         #request_username = request.data.get('username')
         #user = get_object_or_404(User, username=request_username)
         #print(user)
-        serializer = ProfileSerializer(requested_user, data=request.data, partial=True)
 
+        #if requested_user.role == 'admin':
+        serializer = ProfileSerializer(requested_user, data=request.data, partial=True)
+        #else:
+        #    serializer = ProfileSerializer(requested_user, role=requested_user.role, data=request.data, partial=True)
+
+        
         if serializer.is_valid():
-            serializer.save()
+            if requested_user.role == 'admin':
+                serializer.save()
+            else:
+                serializer.save(role=requested_user.role)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -106,7 +122,7 @@ class UserCreateByAdminView(generics.CreateAPIView):
             )
 
         data = request.data
-        print(f'date = {data}')
+        #print(f'date = {data}')
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save(role='user')
@@ -114,11 +130,10 @@ class UserCreateByAdminView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-
+#@list_route(url_path='(?P<username>\w+)')
 class UserViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Group"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination 
     permission_classes = (IsAuthenticated, AdminOnly,)
-

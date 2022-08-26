@@ -21,6 +21,13 @@ CHOICES = (
     )
 
 
+#CHOICES = (
+#        ('user', 'user'),
+#        ('moderator', 'moderator'),
+#        ('admin', 'admin'),
+#    )
+
+
 class User(AbstractUser):
     role = models.CharField(
         'Роль',
@@ -54,7 +61,7 @@ class User(AbstractUser):
         blank=True,
     )
     
-    #objects = CustomUserManager()
+    objects = CustomUserManager()
 
     def __str__(self):
         return self.username
