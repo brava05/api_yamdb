@@ -6,7 +6,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from reviews.models import Genre, Review, Comment, Category, Title
 from .serializers import ReviewSerializer, CommentSerializer, CategorySerializer
 from .serializers import TitleSerializer, GenreSerializer
-from .permissions import AdminOrReadOnly, AuthorAdminModeratorOrReadOnly
+from .permissions import AdminOrReadOnly, AuthorAdminModeratorOrReadOnly, AuthorAdminModeratorOrReadAndPost
 from .pagination import CustomCommentPagination, CustomRewiewPagination
 
 
@@ -17,18 +17,18 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = (AuthorAdminModeratorOrReadOnly,)
+    permission_classes = (AuthorAdminModeratorOrReadAndPost,)
     throttle_classes = (AnonRateThrottle,)
     pagination_class = CustomRewiewPagination
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
+        title = get_object_or_404(Title, pk=title_id)
         return title.reviews.all()
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
+        title = get_object_or_404(Title, pk=title_id)
         serializer.save(author=self.request.user, title=title)
 
 
@@ -38,7 +38,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     для реализации CRUD-операций c комментариями к отзывам.
     """
     serializer_class = CommentSerializer
-    permission_classes = (AuthorAdminModeratorOrReadOnly,)
+    permission_classes = (AuthorAdminModeratorOrReadAndPost,)
     pagination_class = CustomCommentPagination
 
     def get_queryset(self):
