@@ -13,19 +13,9 @@ from rest_framework_simplejwt.tokens import AccessToken
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User"""
 
-    #def create(self, validated_data):
-    #    username = validated_data.get('username')
-    #    if username == 'me':
-    #        raise serializers.ValidationError("username не может быть me")
-    #    else:
-    #        return User.objects.create(**validated_data)
-    #        #return User.objects.create(validated_data)
-
     class Meta:
         model = User
         fields = ('bio', 'email', 'first_name', 'last_name', 'role', 'username')
-        #fields = ('email', 'username')
-
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:

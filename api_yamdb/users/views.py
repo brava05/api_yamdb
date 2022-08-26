@@ -47,8 +47,6 @@ class UserCreateViewSet(generics.CreateAPIView):
         if username == 'me':
             return Response("username не может быть me", status=status.HTTP_400_BAD_REQUEST)
 
-        # print(username)
-
         confirmation_code = get_random_string(length=32)
         send_mail(
             'Confirmation_code',
@@ -60,7 +58,7 @@ class UserCreateViewSet(generics.CreateAPIView):
 
         serializer.save(confirmation_code=confirmation_code, role='user')
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(request.data, status=status.HTTP_200_OK)
 
 
 class GetTokenView(TokenObtainSlidingView):
@@ -74,25 +72,15 @@ class ProfileView(APIView):
 
     def get(self, request):
         user = self.request.user
-        #print(user)
-        #request_author = self.request.user
-        #request_username = request.data.get('username')
-        #user = get_object_or_404(User, username=request_username)
+
         serializer = ProfileSerializer(user, many=False)
         return Response(serializer.data)
 
     def patch(self, request):
         requested_user = self.request.user
         print(requested_user.role)
-        #request_username = request.data.get('username')
-        #user = get_object_or_404(User, username=request_username)
-        #print(user)
 
-        #if requested_user.role == 'admin':
         serializer = ProfileSerializer(requested_user, data=request.data, partial=True)
-        #else:
-        #    serializer = ProfileSerializer(requested_user, role=requested_user.role, data=request.data, partial=True)
-
         
         if serializer.is_valid():
             if requested_user.role == 'admin':
@@ -112,9 +100,6 @@ class UserCreateByAdminView(generics.CreateAPIView):
     def post(self, request):
         request_author = self.request.user
 
-        # request_username = request.data.get('username')
-        # print(f'zdes request_username - {request_username}')
-        # user = get_object_or_404(User, username=request_username)
 
         if request_author.role != "admin":
             raise serializers.ValidationError(
@@ -130,10 +115,12 @@ class UserCreateByAdminView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-#@list_route(url_path='(?P<username>\w+)')
+#751987
+# @list_route(url_path='(?P<username>\w+)')
 class UserViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Group"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    lookup_field = 'username'
     pagination_class = PageNumberPagination 
     permission_classes = (IsAuthenticated, AdminOnly,)
