@@ -3,20 +3,26 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 
+from rest_framework import filters, mixins, viewsets, permissions
+from rest_framework.pagination import PageNumberPagination
+
 from .models import User
 from .serializers import (
     UserSerializer,
     GetTokenSerializer,
     ProfileSerializer,
-    UserByAdminSerializer
+    UserByAdminSerializer,
+    UserSerializer
 )
+
+from api.permissions import AdminOnly
 
 from rest_framework import generics
 
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from rest_framework_simplejwt.views import (TokenObtainSlidingView,)
 
@@ -30,8 +36,12 @@ class UserCreateViewSet(generics.CreateAPIView):
     queryset = User.objects.all()
 
     def post(self, request):
-        confirmation_code = get_random_string(length=32)
+        user = request.data
 
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+
+        confirmation_code = get_random_string(length=32)
         send_mail(
             'Confirmation_code',
             f'Ваш код для завершения регистрации:  {confirmation_code}',
@@ -39,10 +49,7 @@ class UserCreateViewSet(generics.CreateAPIView):
             [request.data.get('email')],
             fail_silently=False,
         )
-        user = request.data
 
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
         serializer.save(confirmation_code=confirmation_code, role='user')
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -50,25 +57,34 @@ class UserCreateViewSet(generics.CreateAPIView):
 
 class GetTokenView(TokenObtainSlidingView):
     serializer_class = GetTokenSerializer
+    permission_classes = (AllowAny,)
 
 
 class ProfileView(APIView):
+
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
-        request_username = request.data.get('username')
-        user = get_object_or_404(User, username=request_username)
+        user = self.request.user
+        print(user)
+        #request_author = self.request.user
+        #request_username = request.data.get('username')
+        #user = get_object_or_404(User, username=request_username)
         serializer = ProfileSerializer(user, many=False)
         return Response(serializer.data)
 
     def patch(self, request):
-        request_username = request.data.get('username')
-        user = get_object_or_404(User, username=request_username)
-        print(user)
-        serializer = ProfileSerializer(user, data=request.data, partial=True)
+        requested_user = self.request.user
+        print(requested_user)
+        #request_username = request.data.get('username')
+        #user = get_object_or_404(User, username=request_username)
+        #print(user)
+        serializer = ProfileSerializer(requested_user, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserCreateByAdminView(generics.CreateAPIView):
@@ -96,3 +112,13 @@ class UserCreateByAdminView(generics.CreateAPIView):
         serializer.save(role='user')
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Group"""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    pagination_class = PageNumberPagination 
+    permission_classes = (IsAuthenticated, AdminOnly,)
+

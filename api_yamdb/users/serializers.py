@@ -22,13 +22,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = 'username', 'email'
+        fields = 'email', 'username'
 
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('bio', 'role', 'username')
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
 
 
 class GetTokenSerializer(serializers.Serializer):
@@ -74,3 +74,10 @@ class UserByAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = 'username',
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        model = User

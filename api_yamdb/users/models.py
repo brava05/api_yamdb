@@ -54,7 +54,7 @@ class User(AbstractUser):
         blank=True,
     )
     
-    objects = CustomUserManager()
+    #objects = CustomUserManager()
 
     def __str__(self):
         return self.username
