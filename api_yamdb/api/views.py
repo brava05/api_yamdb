@@ -8,7 +8,7 @@ from reviews.models import Genre, Review, Comment, Category, Title
 from .serializers import ReviewSerializer, CommentSerializer, CategorySerializer
 from .serializers import TitleSerializer, GenreSerializer
 from .permissions import AdminOrReadOnly, AuthorAdminModeratorOrReadOnly, AuthorAdminModeratorOrReadAndPost
-from .pagination import CustomCommentPagination, CustomRewiewPagination
+from .pagination import CustomPagination
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -20,16 +20,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (AuthorAdminModeratorOrReadAndPost,)
     throttle_classes = (AnonRateThrottle,)
-    pagination_class = CustomRewiewPagination
+    pagination_class = CustomPagination
 
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
 
 
@@ -40,11 +38,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     """
     serializer_class = CommentSerializer
     permission_classes = (AuthorAdminModeratorOrReadAndPost,)
-    pagination_class = CustomCommentPagination
+    pagination_class = CustomPagination
 
     def get_queryset(self):
-        review_id = self.kwargs.get("review_id")
-        review = get_object_or_404(Review, id=review_id)
+        review = get_object_or_404(Review, id=self.kwargs.get("review_id"))
         return Comment.objects.filter(review=review)
 
     def perform_create(self, serializer):
@@ -100,3 +97,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
+
+    def perform_create(self, serializer):
+        slug=serializer.data.get("category")
+        print(slug)
+        category = get_object_or_404(Category, slug=slug)
+        print(category)
+        # print("__6")
+        serializer.save(category=category)

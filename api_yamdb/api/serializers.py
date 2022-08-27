@@ -28,6 +28,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    # slug = serializers.SlugRelatedField(
+    #     slug_field='slug',
+    #     read_only=True
+    # )
     class Meta:
         fields = ('name', 'slug')
         model = Category
@@ -40,6 +44,12 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+        # read_only=True
+    )
+
     class Meta:
         fields = '__all__'
         model = Title
