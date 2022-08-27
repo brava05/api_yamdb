@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, mixins, viewsets
+from rest_framework import filters, mixins, viewsets, status
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 
 from reviews.models import Genre, Review, Comment, Category, Title
 from .serializers import ReviewSerializer, CommentSerializer, CategorySerializer
@@ -63,10 +64,13 @@ class CategoryViewSet(
 ):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AdminOrReadOnly,)
+    permission_classes = (AuthorAdminModeratorOrReadOnly,)
     pagination_class = LimitOffsetPagination,
     filter_backends = [filters.SearchFilter],
     search_fields = ('name',)
+
+    def perform_destroy(self, instance):
+        instance.delete()
 
 
 class GenreViewSet(
@@ -75,15 +79,23 @@ class GenreViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet
 ):
+    """
+    Получение списка всех жанров.
+    Права доступа: Доступно без токена.
+    """
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (AdminOrReadOnly,)
+    permission_classes = (AuthorAdminModeratorOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = [filters.SearchFilter],
     search_fields = ('name',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """
+    Получение списка всех произведений.
+    Права доступа: Доступно без токена.
+    """
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
