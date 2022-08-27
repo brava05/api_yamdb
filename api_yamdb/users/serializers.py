@@ -13,22 +13,14 @@ from rest_framework_simplejwt.tokens import AccessToken
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User"""
 
-    def create(self, validated_data):
-        username = validated_data.get('username')
-        if username == 'me':
-            raise serializers.ValidationError("username не может быть me")
-        else:
-            return User.objects.create(**validated_data)
-
     class Meta:
         model = User
-        fields = 'username', 'email'
-
+        fields = ('bio', 'email', 'first_name', 'last_name', 'role', 'username')
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('bio', 'role', 'username')
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
 
 
 class GetTokenSerializer(serializers.Serializer):
@@ -74,3 +66,17 @@ class UserByAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = 'username',
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+
+        if "role" not in validated_data:
+            return User.objects.create(role="user", **validated_data)
+        else:
+            return User.objects.create(**validated_data)
+
+    class Meta:
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        model = User

@@ -21,6 +21,13 @@ CHOICES = (
     )
 
 
+#CHOICES = (
+#        ('user', 'user'),
+#        ('moderator', 'moderator'),
+#        ('admin', 'admin'),
+#    )
+
+
 class User(AbstractUser):
     role = models.CharField(
         'Роль',
