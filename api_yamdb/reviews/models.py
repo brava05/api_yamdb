@@ -36,10 +36,12 @@ class Review(models.Model):
         'Дата публикации', auto_now_add=True
     )
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews'
+        User, on_delete=models.CASCADE,
+        related_name='reviews'
     )
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE
+        Title, on_delete=models.CASCADE,
+        related_name='reviews'
     )
     score = models.IntegerField(blank=True, default=0)
 
