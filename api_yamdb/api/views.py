@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, viewsets, status
 from rest_framework.throttling import AnonRateThrottle
-from rest_framework.pagination import LimitOffsetPagination
+# from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from django.db.models import Avg
 
@@ -10,7 +10,6 @@ from .serializers import (ReviewSerializer, CommentSerializer,
                           CategorySerializer, TitleSerializer,
                           TitleReadSerializer, GenreSerializer)
 from .permissions import (AdminOrReadOnly,
-                          AuthorAdminModeratorOrReadOnly,
                           AuthorAdminModeratorOrReadAndPost)
 from .pagination import CustomPagination
 
@@ -34,8 +33,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
 
-#     def validate
-# title_id = (self.context['request'].parser_context['kwargs']['title_id'])
+    # def validate:
+    #     title_id = (self.context['request'].parser_context['kwargs']['title_id'])
 
 class CommentViewSet(viewsets.ModelViewSet):
     """
@@ -67,8 +66,8 @@ class CategoryViewSet(
 ):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AuthorAdminModeratorOrReadOnly,)
-    pagination_class = LimitOffsetPagination
+    permission_classes = (AdminOrReadOnly,)
+    pagination_class = CustomPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
@@ -94,8 +93,8 @@ class GenreViewSet(
     """
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (AuthorAdminModeratorOrReadOnly,)
-    pagination_class = LimitOffsetPagination
+    permission_classes = (AdminOrReadOnly,)
+    pagination_class = CustomPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
@@ -109,21 +108,21 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
-    pagination_class = LimitOffsetPagination
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
+        # print("_____1")
         slug = self.request.data.get('category')
-        category = Category.objects.get(slug)
-        description = self.request.data.get('description')
+        # print(slug)
+        category = Category.objects.get(slug=slug)
+        # print(category)
+        # description = self.request.data.get('description')
         #slug = serializer.data.get("category")
-        #print(slug)
-        #category = get_object_or_404(Category, slug=slug)
-        #print(category)
-        # print("__6")
-        #serializer.save(category=category)
+        
+        print(category)
         return serializer.save(
-            category=category,
-            description=description
+            category=category
+            # description=description
         )
 
     def perform_update(self, serializer):
@@ -138,8 +137,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH'):
-            return TitleReadSerializer
-        return TitleSerializer
+            return TitleSerializer
+        return TitleReadSerializer
 
     def get_queryset(self):
         return Title.objects.annotate(rating=Avg(
