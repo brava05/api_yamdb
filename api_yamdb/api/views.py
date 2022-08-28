@@ -103,8 +103,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     Получение списка всех произведений.
     Права доступа: Доступно без токена.
     """
-    queryset = Title.objects.prefetch_related(
-        'category', 'genre').annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
@@ -138,3 +137,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.request.method in ('POST', 'PATCH'):
             return TitleReadSerializer
         return TitleSerializer
+
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg(
+            "reviews__score")).order_by("id")
