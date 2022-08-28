@@ -6,9 +6,12 @@ from rest_framework.response import Response
 from django.db.models import Avg
 
 from reviews.models import Genre, Review, Comment, Category, Title
-from .serializers import ReviewSerializer, CommentSerializer, CategorySerializer
-from .serializers import TitleSerializer, GenreSerializer
-from .permissions import AdminOrReadOnly, AuthorAdminModeratorOrReadOnly, AuthorAdminModeratorOrReadAndPost
+from .serializers import (ReviewSerializer, CommentSerializer,
+                          CategorySerializer, TitleSerializer,
+                          TitleReadSerializer, GenreSerializer)
+from .permissions import (AdminOrReadOnly,
+                          AuthorAdminModeratorOrReadOnly,
+                          AuthorAdminModeratorOrReadAndPost)
 from .pagination import CustomPagination
 
 
@@ -71,7 +74,10 @@ class CategoryViewSet(
         category = self.get_object()
         serializer = CategorySerializer
         category.delete()
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            serializer.data,
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class GenreViewSet(
@@ -97,7 +103,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     Получение списка всех произведений.
     Права доступа: Доступно без токена.
     """
-    queryset = Title.objects.all()
+    queryset = Title.objects.prefetch_related(
+        'category', 'genre').annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
@@ -112,7 +119,10 @@ class TitleViewSet(viewsets.ModelViewSet):
         #print(category)
         # print("__6")
         #serializer.save(category=category)
-        return serializer.save(category=category, description=description)
+        return serializer.save(
+            category=category,
+            description=description
+        )
 
     def perform_update(self, serializer):
         category = get_object_or_404(
@@ -123,3 +133,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Title.objects.annotate(rating=Avg(
             "reviews__score")).order_by("id")
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH'):
+            return TitleReadSerializer
+        return TitleSerializer
