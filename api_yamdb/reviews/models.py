@@ -2,6 +2,20 @@ from django.db import models
 from users.models import User
 
 
+SCORE_CHOICES = (
+        (1, '1'),
+        (2, '2'),
+        (3, '3'),
+        (4, '4'),
+        (5, '5'),
+        (6, '6'),
+        (7, '7.'),
+        (8, '8.'),
+        (9, '9'),
+        (10, '10'),
+    )
+
+
 class Category(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
@@ -36,19 +50,24 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    text = models.TextField()
+    text = models.TextField(verbose_name='Отзыв')
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True
     )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='reviews',
+        verbose_name='Автор'
     )
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='reviews',
+        verbose_name='Произведение'
     )
-    score = models.IntegerField(blank=True, default=0)
+    score = models.SmallIntegerField(
+        choices=SCORE_CHOICES,
+        verbose_name='Рейтинг',
+        )
 
     def __str__(self):
         return f'{self.title} {self.text[:30]}'
