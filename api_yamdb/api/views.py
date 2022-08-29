@@ -1,7 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, viewsets, status
 from rest_framework.throttling import AnonRateThrottle
+
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+
 from rest_framework.response import Response
 from django.db.models import Avg
 
@@ -10,7 +12,6 @@ from .serializers import (ReviewSerializer, CommentSerializer,
                           CategorySerializer, TitleSerializer,
                           TitleReadSerializer, GenreSerializer)
 from .permissions import (AdminOrReadOnly,
-                          AuthorAdminModeratorOrReadOnly,
                           AuthorAdminModeratorOrReadAndPost)
 from .pagination import CustomPagination
 
@@ -97,6 +98,7 @@ class GenreViewSet(CreateListViewSet):
     pagination_class = CustomPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
     def destroy(self, request, pk=None):
         queryset = Genre.objects.all()
@@ -113,21 +115,20 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
-    pagination_class = LimitOffsetPagination
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
+        # print("_____1")
         slug = self.request.data.get('category')
-        category = Category.objects.get(slug)
-        description = self.request.data.get('description')
+        # print(slug)
+        category = Category.objects.get(slug=slug)
+        # print(category)
+        # description = self.request.data.get('description')
         #slug = serializer.data.get("category")
-        #print(slug)
-            #category = get_object_or_404(Category, slug=slug)
-        #print(category)
-        # print("__6")
-        #serializer.save(category=category)
+
         return serializer.save(
-            category=category,
-            description=description
+            category=category
+            # description=description
         )
 
     def perform_update(self, serializer):
@@ -142,8 +143,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH'):
-            return TitleReadSerializer
-        return TitleSerializer
+            return TitleSerializer
+        return TitleReadSerializer
 
     def get_queryset(self):
         return Title.objects.annotate(rating=Avg(

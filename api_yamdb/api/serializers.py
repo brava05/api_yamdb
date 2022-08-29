@@ -1,5 +1,5 @@
-from rest_framework import serializers
-
+from rest_framework import serializers, status
+from rest_framework.response import Response
 from reviews.models import Review, Comment, Category, Genre, Title, TitleGenre
 
 
@@ -8,6 +8,18 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True
     )
+
+    def validate(self, data):
+        """
+        checks that one reviews per title from each users
+        """
+        request = self.context.get("request")
+        title_id = (request.parser_context['kwargs']['title_id'])
+        user = request.user
+        if request.method == 'POST':
+            if Review.objects.filter(title=title_id, author=user).exists():
+                raise serializers.ValidationError("Уже есть отзыв этого пользователя на это произведение")
+        return data
 
     class Meta:
         fields = '__all__'
@@ -44,6 +56,11 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='name', read_only=False,
+        queryset=Genre.objects.all(),
+        many=True
+    )
     category = serializers.SlugRelatedField(
         slug_field='slug',
         many=False,
