@@ -1,7 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, viewsets, status
 from rest_framework.throttling import AnonRateThrottle
-# from rest_framework.pagination import LimitOffsetPagination
+
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+
 from rest_framework.response import Response
 from django.db.models import Avg
 
@@ -14,10 +16,18 @@ from .permissions import (AdminOrReadOnly,
 from .pagination import CustomPagination
 
 
+class CreateListViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin,
+    mixins.DestroyModelMixin, viewsets.GenericViewSet
+):
+    pass
+
+
 class ReviewViewSet(viewsets.ModelViewSet):
     """
     Вьюсет к модели Review
     для реализации CRUD-операций со списками всех отзывов.
+    Права доступа: Доступно без токена.
     """
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
@@ -37,7 +47,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """
     Вьюсет к модели Comment
-    для реализации CRUD-операций c комментариями к отзывам.
+    для реализации CRUD-операций c комментариями к отзывам по id.
     """
     serializer_class = CommentSerializer
     permission_classes = (AuthorAdminModeratorOrReadAndPost,)
@@ -56,12 +66,12 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(review=review, author=self.request.user)
 
 
-class CategoryViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class CategoryViewSet(CreateListViewSet):
+    """
+    Вьюсет для модели Category.
+    Получение списка всех категорий.
+    Права доступа: Доступно без токена.
+    """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (AdminOrReadOnly,)
@@ -69,23 +79,16 @@ class CategoryViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
-    def delete_category(self, request, slug):
-        category = self.get_object()
-        serializer = CategorySerializer
-        category.delete()
-        return Response(
-            serializer.data,
-            status=status.HTTP_204_NO_CONTENT
-        )
+    def destroy(self, request, pk=None):
+        queryset = Category.objects.all()
+        category = get_object_or_404(queryset, slug=pk)
+        self.perform_destroy(category)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class GenreViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class GenreViewSet(CreateListViewSet):
     """
+    Вьюсет для модели Genre.
     Получение списка всех жанров.
     Права доступа: Доступно без токена.
     """
@@ -96,6 +99,12 @@ class GenreViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
+
+    def destroy(self, request, pk=None):
+        queryset = Genre.objects.all()
+        genre = get_object_or_404(queryset, slug=pk)
+        self.perform_destroy(genre)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -116,8 +125,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         # print(category)
         # description = self.request.data.get('description')
         #slug = serializer.data.get("category")
-        
-        print(category)
+
         return serializer.save(
             category=category
             # description=description
