@@ -11,13 +11,14 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """
-        checks that two reviews per title
+        checks that one reviews per title from each users
         """
         request = self.context.get("request")
         title_id = (request.parser_context['kwargs']['title_id'])
         user = request.user
-        if Review.objects.filter(title=title_id, author=user).exists():
-            raise serializers.ValidationError("Уже есть отзыв этого пользователя на это произведение")
+        if request.method == 'POST':
+            if Review.objects.filter(title=title_id, author=user).exists():
+                raise serializers.ValidationError("Уже есть отзыв этого пользователя на это произведение")
         return data
 
     class Meta:
