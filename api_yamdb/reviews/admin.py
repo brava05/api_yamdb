@@ -17,7 +17,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ('name', 'year', 'category')
+    list_display = ('name', 'year', 'category', )
     list_filter = ('name',)
     empty_value_display = '-пусто-'
 

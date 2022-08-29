@@ -1,30 +1,28 @@
 from rest_framework import serializers
-# from rest_framework import mixins
-
-from collections import OrderedDict
-
-from .models import User
-from django.shortcuts import get_object_or_404
-
-from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import AccessToken
 
+from collections import OrderedDict
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
-class UserSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели User"""
+from .models import User
 
-    class Meta:
-        model = User
-        fields = ('bio', 'email', 'first_name', 'last_name', 'role', 'username')
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
+        )
 
 
 class GetTokenSerializer(serializers.Serializer):
-
+    """ Сериалайзер для обработки данных при получении токена """
     username_field = get_user_model().USERNAME_FIELD
     token_class = AccessToken
 
@@ -53,23 +51,8 @@ class GetTokenSerializer(serializers.Serializer):
         return cls.token_class.for_user(user)
 
 
-class UserByAdminSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели User"""
-
-    def create(self, validated_data):
-        username = validated_data.get('username')
-        if username == 'me':
-            raise serializers.ValidationError("username не может быть me")
-        else:
-            return User.objects.create(**validated_data)
-
-    class Meta:
-        model = User
-        fields = 'username',
-
-
 class UserSerializer(serializers.ModelSerializer):
-
+    """ Сериалайзер для обработки данных при создании юзера """
     def create(self, validated_data):
 
         if "role" not in validated_data:
@@ -78,5 +61,12 @@ class UserSerializer(serializers.ModelSerializer):
             return User.objects.create(**validated_data)
 
     class Meta:
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
+        )
         model = User

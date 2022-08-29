@@ -1,15 +1,5 @@
-from __future__ import unicode_literals
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-from django.db import models
-from django.contrib.auth.models import PermissionsMixin
-from django.contrib.auth.base_user import AbstractBaseUser
-from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.base_user import BaseUserManager
-
-#from .managers import UserManager
 
 
 CHOICES = (
@@ -28,23 +18,22 @@ class User(AbstractUser):
         choices=CHOICES
     )
 
-
     bio = models.TextField(
         'Биография',
         blank=True,
-    ) 
+    )
 
     email = models.EmailField(unique=True)
     confirmation_code = models.CharField(
         max_length=25,
         blank=True,
-    )  
+    )
 
     confirmation_code = models.CharField(
         'Код подтверждения',
         max_length=50,
         blank=True,
-    )   
+    )
 
     password = models.CharField(
         unique=False,

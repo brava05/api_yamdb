@@ -107,7 +107,8 @@ class GenreViewSet(CreateListViewSet):
 
     def destroy(self, request, *args, **kwargs):
         queryset = Genre.objects.all()
-        genre = get_object_or_404(queryset, slug = kwargs.get("slug"))
+        genre = get_object_or_404(queryset, slug=kwargs.get("slug"))
+        print(genre)
         self.perform_destroy(genre)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
