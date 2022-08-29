@@ -50,7 +50,7 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    text = models.TextField(verbose_name='Отзыв')
+    text = models.TextField(verbose_name='Текст отзыва')
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True
     )
@@ -71,6 +71,16 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.title} {self.text[:30]}'
+
+    class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_review',
+                fields=['author', 'title'],
+            ),
+        ]
 
 
 class Comment(models.Model):

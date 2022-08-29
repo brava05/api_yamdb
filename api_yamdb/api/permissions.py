@@ -23,15 +23,15 @@ class AuthorAdminModeratorOrReadOnly(permissions.BasePermission):
 class AuthorAdminModeratorOrReadAndPost(permissions.BasePermission):
 
     def has_permission(self, request, view):
+        if request.method == "POST":
+            return request.user and request.user.is_authenticated
+
         return True
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        if request.method == "POST":
-            return request.user.is_authenticated
-        
         if not request.user.is_authenticated:
             return False
 
