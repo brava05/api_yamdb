@@ -29,6 +29,13 @@ class Title(models.Model):
     def __str__(self):
         return self.name
 
+class TitleGenre(models.Model):
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.title} {self.genre}'
+
 
 class Review(models.Model):
     text = models.TextField()
@@ -62,9 +69,3 @@ class Comment(models.Model):
     )
 
 
-class TitleGenre(models.Model):
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f'{self.title} {self.genre}'
