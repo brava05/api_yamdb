@@ -33,7 +33,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
 
-    # def validate:
+    # def validate(self):
     #     title_id = (self.context['request'].parser_context['kwargs']['title_id'])
 
 class CommentViewSet(viewsets.ModelViewSet):
