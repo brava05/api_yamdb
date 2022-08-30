@@ -70,10 +70,6 @@ class AdminOnly(permissions.BasePermission):
             or request.user.is_superuser is True
         )
 
-        return (
-            request.method in permissions.SAFE_METHODS
-            or request.user.role == 'admin'
-        )
 
 class AdminOrReadOnly_Object(permissions.BasePermission):
 
