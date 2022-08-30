@@ -40,20 +40,12 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    # slug = serializers.SlugRelatedField(
-    #     slug_field='slug',
-    #     read_only=True
-    # )
     class Meta:
         model = Category
         fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    # slug = serializers.SlugRelatedField(
-    #     slug_field='slug',
-    #     read_only=True
-    # )
     class Meta:
         model = Genre
         fields = ('name', 'slug')
@@ -82,13 +74,12 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(required=False, read_only=True), #
-    genre = GenreSerializer(many=True, read_only=True), #
+    category = CategorySerializer(required=False, read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.IntegerField()
 
     class Meta:
         model = Title
-        # fields = '__all__'
         fields = (
             'id', 'name', 'description', 'year'
              ,'category', 'genre', 'rating')
