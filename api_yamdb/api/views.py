@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, viewsets, status
 from rest_framework.throttling import AnonRateThrottle
 
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+from rest_framework.pagination import PageNumberPagination
 
 from rest_framework.response import Response
 from django.db.models import Avg
@@ -14,14 +14,11 @@ from .serializers import (ReviewSerializer, CommentSerializer,
 from .permissions import (AdminOrReadOnly,
                           AuthorAdminModeratorOrReadAndPost,
                           AdminOrReadOnly_Object)
-from .pagination import CustomPagination
 
-#Rusl
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .filters import TitleFilter
 
 from django_filters.rest_framework import DjangoFilterBackend
-
 
 
 class CreateListViewSet(
@@ -44,7 +41,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (AuthorAdminModeratorOrReadAndPost,)
     throttle_classes = (AnonRateThrottle,)
-    pagination_class = CustomPagination
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -62,7 +59,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     """
     serializer_class = CommentSerializer
     permission_classes = (AuthorAdminModeratorOrReadAndPost,)
-    pagination_class = CustomPagination
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         review = get_object_or_404(Review, id=self.kwargs.get("review_id"))
@@ -86,7 +83,7 @@ class CategoryViewSet(CreateListViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (AdminOrReadOnly,)
-    pagination_class = CustomPagination
+    pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
@@ -106,7 +103,7 @@ class GenreViewSet(CreateListViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (AdminOrReadOnly,)
-    pagination_class = CustomPagination
+    pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
@@ -126,10 +123,12 @@ class TitleViewSet(viewsets.ModelViewSet):
     """
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
+
     permission_classes = (AdminOrReadOnly_Object,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+
 
 
     def perform_create(self, serializer):
@@ -139,7 +138,6 @@ class TitleViewSet(viewsets.ModelViewSet):
 
         return serializer.save(
             category=category
-            # description=description
         )
 
     def perform_update(self, serializer):
@@ -155,9 +153,12 @@ class TitleViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH'):
             return TitleSerializer
+        print(2)
         return TitleReadSerializer
+
 
     def get_queryset(self):
 
         return Title.objects.annotate(rating=Avg(
             "reviews__score")).order_by("id")
+
