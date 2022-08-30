@@ -18,6 +18,9 @@ from .pagination import CustomPagination
 
 #Rusl
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from .filters import TitleFilter
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 
@@ -26,6 +29,9 @@ class CreateListViewSet(
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
     pass
+
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -120,18 +126,16 @@ class TitleViewSet(viewsets.ModelViewSet):
     """
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    #permission_classes = (AdminOrReadOnly,)
     permission_classes = (AdminOrReadOnly_Object,)
     pagination_class = CustomPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+
 
     def perform_create(self, serializer):
-        # print("_____1")
         slug = self.request.data.get('category')
-        # print(slug)
         category = Category.objects.get(slug=slug)
-        # print(category)
-        # description = self.request.data.get('description')
-        #slug = serializer.data.get("category")
+
 
         return serializer.save(
             category=category
@@ -154,5 +158,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleReadSerializer
 
     def get_queryset(self):
+
         return Title.objects.annotate(rating=Avg(
             "reviews__score")).order_by("id")

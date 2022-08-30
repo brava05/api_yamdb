@@ -27,10 +27,12 @@ INSTALLED_APPS = [
 
     # Rusl added
     'rest_framework',
+    'django_filters', 
     'users.apps.UsersConfig',
     'rest_framework.authtoken',
     'reviews',
-    'api'
+    'api',
+
 
 ]
 
@@ -112,6 +114,10 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
     ),
 
     'PAGE_SIZE': 4,
