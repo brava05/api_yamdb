@@ -3,17 +3,17 @@ from users.models import User
 
 
 SCORE_CHOICES = (
-        (1, '1'),
-        (2, '2'),
-        (3, '3'),
-        (4, '4'),
-        (5, '5'),
-        (6, '6'),
-        (7, '7.'),
-        (8, '8.'),
-        (9, '9'),
-        (10, '10'),
-    )
+    (1, '1'),
+    (2, '2'),
+    (3, '3'),
+    (4, '4'),
+    (5, '5'),
+    (6, '6'),
+    (7, '7.'),
+    (8, '8.'),
+    (9, '9'),
+    (10, '10'),
+)
 
 
 class Category(models.Model):
@@ -67,7 +67,7 @@ class Review(models.Model):
     score = models.SmallIntegerField(
         choices=SCORE_CHOICES,
         verbose_name='Рейтинг',
-        )
+    )
 
     def __str__(self):
         return f'{self.title} {self.text[:30]}'

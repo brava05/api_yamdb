@@ -19,7 +19,7 @@ class Command(BaseCommand):
         self.import_obj('genre_title', TitleGenre)
 
     def import_obj(self, name_in_file, class_name):
-        file_name = f'static\data\{name_in_file}.csv'
+        file_name = f'static/data/{name_in_file}.csv'
         with open(file_name, encoding='utf-8') as r_file:
             file_reader = csv.DictReader(r_file, delimiter=",")
             count = 0
@@ -39,7 +39,6 @@ class Command(BaseCommand):
                             pk=row.get("category")
                         )
                         obj.save()
-                        # DummyModel.objects.create(**data_dict)
                     elif class_name == User:
                         obj = class_name(pk=row['id'],
                                          username=row['username'],
@@ -70,8 +69,4 @@ class Command(BaseCommand):
                         obj.title = Title.objects.get(pk=row.get("title_id"))
                         obj.genre = Genre.objects.get(pk=row.get("genre_id"))
                         obj.save()
-                else:
-                    # obj = class_name.objects.get(pk=row.get("id"))
-                    print('----')
-                # print(obj)
                 count += 1
