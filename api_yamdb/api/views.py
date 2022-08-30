@@ -12,8 +12,13 @@ from .serializers import (ReviewSerializer, CommentSerializer,
                           CategorySerializer, TitleSerializer,
                           TitleReadSerializer, GenreSerializer)
 from .permissions import (AdminOrReadOnly,
-                          AuthorAdminModeratorOrReadAndPost)
+                          AuthorAdminModeratorOrReadAndPost,
+                          AdminOrReadOnly_Object)
 from .pagination import CustomPagination
+
+#Rusl
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
 
 
 class CreateListViewSet(
@@ -100,9 +105,10 @@ class GenreViewSet(CreateListViewSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    def destroy(self, request, pk=None):
+    def destroy(self, request, *args, **kwargs):
         queryset = Genre.objects.all()
-        genre = get_object_or_404(queryset, slug=pk)
+        genre = get_object_or_404(queryset, slug=kwargs.get("slug"))
+        print(genre)
         self.perform_destroy(genre)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -114,7 +120,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     """
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (AdminOrReadOnly,)
+    #permission_classes = (AdminOrReadOnly,)
+    permission_classes = (AdminOrReadOnly_Object,)
     pagination_class = CustomPagination
 
     def perform_create(self, serializer):

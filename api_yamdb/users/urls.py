@@ -6,7 +6,6 @@ from .views import (
     UserCreateViewSet,
     GetTokenView,
     ProfileView,
-    UserCreateByAdminView,
     UserViewSet
 )
 
@@ -19,5 +18,4 @@ urlpatterns = [
     path('v1/auth/token/', GetTokenView.as_view()),
     path('v1/users/me/', ProfileView.as_view()),
     path('v1/', include(v1_router.urls)),
-    #path('v1/users/', UserCreateByAdminView.as_view()),
 ]
