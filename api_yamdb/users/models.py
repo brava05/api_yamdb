@@ -3,10 +3,10 @@ from django.db import models
 
 
 CHOICES = (
-        ('user', 'Аутентифицированный пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Администратор'),
-    )
+    ('user', 'Аутентифицированный пользователь'),
+    ('moderator', 'Модератор'),
+    ('admin', 'Администратор'),
+)
 
 
 class User(AbstractUser):

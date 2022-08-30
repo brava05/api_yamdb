@@ -1,6 +1,5 @@
-from rest_framework import serializers, status
-from rest_framework.response import Response
-from reviews.models import Review, Comment, Category, Genre, Title, TitleGenre
+from rest_framework import serializers
+from reviews.models import Review, Comment, Category, Genre, Title
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -18,7 +17,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         user = request.user
         if request.method == 'POST':
             if Review.objects.filter(title=title_id, author=user).exists():
-                raise serializers.ValidationError("Уже есть отзыв этого пользователя на это произведение")
+                raise serializers.ValidationError(
+                    "Уже есть отзыв этого пользователя на это произведение"
+                )
         return data
 
     class Meta:
@@ -66,11 +67,10 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        # fields = '__all__'
         fields = (
-            'id', 'name', 'description', 'year'
-             ,'category', 'genre'
-        ) #, 'rating'
+            'id', 'name', 'description', 'year',
+            'category', 'genre'
+        )
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
@@ -81,5 +81,5 @@ class TitleReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'description', 'year'
-             ,'category', 'genre', 'rating')
+            'id', 'name', 'description', 'year',
+            'category', 'genre', 'rating')

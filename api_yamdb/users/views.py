@@ -69,7 +69,6 @@ class ProfileView(APIView):
 
     def patch(self, request):
         requested_user = self.request.user
-        print(requested_user.role)
 
         serializer = ProfileSerializer(
             requested_user,

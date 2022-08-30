@@ -1,9 +1,8 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from .views import GenreViewSet, ReviewViewSet, CommentViewSet, CategoryViewSet, TitleViewSet
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView, TokenRefreshView, TokenVerifyView)
+from .views import (GenreViewSet, ReviewViewSet, CommentViewSet,
+                    CategoryViewSet, TitleViewSet)
 
 
 v1_router = SimpleRouter()
