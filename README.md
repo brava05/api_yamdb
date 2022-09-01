@@ -7,7 +7,7 @@
 ```BASH
 git clone git@github.com/brava05/api_yamdb
 ```
-Cоздать и активировать виртуальное окружение:
+Создать и активировать виртуальное окружение:
 ```BASH
 python -m venv env
 source env/venv/activate
@@ -54,7 +54,7 @@ http://127.0.0.1:8000/api/v1/auth/token/
     "confirmation_code": "OHC8U9fgUtDa6ttpzD6EGvT689jS9cjC"
 }
 ```
-Получаем в ответ токен, которые используем для автороизации в дальнейшей работе
+Получаем в ответ токен, которые используем для авторизации в дальнейшей работе
 ```JSON
 {
     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjYyMDQzODkwLCJpYXQiOjE2NjIwMTM4OTAsImp0aSI6IjViZWI3ZDg4YTg5MDQxZmVhY2RlOWM2YTUzOTMyYTQ4IiwidXNlcl9pZCI6MTA1fQ.II1QHxuSysvSkPilhbYw4Pi-I7MpD-q_M1Uzt-e0aT0"
