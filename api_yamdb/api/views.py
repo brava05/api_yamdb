@@ -12,6 +12,9 @@ from .serializers import (ReviewSerializer, CommentSerializer,
 from .permissions import (AdminOrReadOnly,
                           AuthorAdminModeratorOrReadAndPost,
                           AdminOrReadOnly_Object)
+from .permissions import (IsAdmin,
+                          IsAdminOrReadOnly,
+                          IsAuthorAdminModeratorOrReadOnly)
 from .filters import TitleFilter
 
 
@@ -19,6 +22,10 @@ class CreateListViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
+    """
+    Общий класс микинов для наследования
+    вьюсетов CategoryViewSet и GenreViewSet.
+    """
     pass
 
 
@@ -49,7 +56,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     для реализации CRUD-операций c комментариями к отзывам по id.
     """
     serializer_class = CommentSerializer
-    permission_classes = (AuthorAdminModeratorOrReadAndPost,)
+    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
@@ -73,16 +80,11 @@ class CategoryViewSet(CreateListViewSet):
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-
-    def destroy(self, request, pk=None):
-        queryset = Category.objects.all()
-        category = get_object_or_404(queryset, slug=pk)
-        self.perform_destroy(category)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    lookup_field = "slug"
 
 
 class GenreViewSet(CreateListViewSet):
@@ -93,17 +95,11 @@ class GenreViewSet(CreateListViewSet):
     """
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (AdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-
-    def destroy(self, request, *args, **kwargs):
-        queryset = Genre.objects.all()
-        genre = get_object_or_404(queryset, slug=kwargs.get("slug"))
-        self.perform_destroy(genre)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -111,27 +107,13 @@ class TitleViewSet(viewsets.ModelViewSet):
     Получение списка всех произведений.
     Права доступа: Доступно без токена.
     """
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg(
+            "reviews__score")).order_by("id")
     serializer_class = TitleSerializer
 
-    permission_classes = (AdminOrReadOnly_Object,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-
-    def perform_create(self, serializer):
-        slug = self.request.data.get('category')
-        category = Category.objects.get(slug=slug)
-        return serializer.save(category=category)
-
-    def perform_update(self, serializer):
-        category = get_object_or_404(
-            Category, slug=self.request.data.get('category')
-        )
-        return serializer.save(category=category)
-
-    def get_queryset(self):
-        return Title.objects.annotate(rating=Avg(
-            "reviews__score")).order_by("id")
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH'):
