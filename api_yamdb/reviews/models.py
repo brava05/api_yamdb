@@ -95,5 +95,8 @@ class TitleGenre(models.Model):
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name = "Жанры произведения"
+
     def __str__(self):
         return f'{self.title} {self.genre}'
