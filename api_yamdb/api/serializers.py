@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from reviews.models import Review, Comment, Category, Genre, Title
-
+from django.shortcuts import get_object_or_404
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -14,9 +14,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         """
         request = self.context.get("request")
         title_id = (request.parser_context['kwargs']['title_id'])
-        user = request.user
         if request.method == 'POST':
-            if Review.objects.filter(title=title_id, author=user).exists():
+            if Review.objects.filter(title=title_id, author=request.user).exists():
                 raise serializers.ValidationError(
                     "Уже есть отзыв этого пользователя на это произведение"
                 )
