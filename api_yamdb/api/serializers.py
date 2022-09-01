@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from reviews.models import Review, Comment, Category, Genre, Title
-from django.shortcuts import get_object_or_404
+from users.models import User
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -15,7 +16,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         title_id = (request.parser_context['kwargs']['title_id'])
         if request.method == 'POST':
-            if Review.objects.filter(title=title_id, author=request.user).exists():
+            if Review.objects.filter(
+                title=title_id,
+                author=request.user
+            ).exists():
                 raise serializers.ValidationError(
                     "Уже есть отзыв этого пользователя на это произведение"
                 )
@@ -82,3 +86,29 @@ class TitleReadSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'description', 'year',
             'category', 'genre', 'rating')
+
+
+class GetTokenSerializer(serializers.Serializer):
+    """ Сериалайзер для обработки данных при получении токена """
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=True)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """ Сериалайзер для обработки данных при создании юзера """
+
+    class Meta:
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
+        )
+        model = User
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError('Username не может быть me')
+        return value
