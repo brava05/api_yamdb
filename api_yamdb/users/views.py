@@ -19,7 +19,8 @@ from api_yamdb.settings import EMAIL_BACKEND
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.tokens import default_token_generator 
+from django.contrib.auth.tokens import default_token_generator
+from rest_framework.decorators import action
 
 
 class UserCreateViewSet(generics.CreateAPIView):
@@ -64,24 +65,30 @@ def get_tokens_for_user(user):
     }
 
 
-@api_view(['POST',])
+@api_view(['POST', ])
 @permission_classes([AllowAny])
 def GetTokenView(request):
     serializer = GetTokenSerializer(data=request.data)
     username = request.data.get("username")
-    confirmation_code = request.data.get("confirmation_code") 
+    confirmation_code = request.data.get("confirmation_code")
 
     if serializer.is_valid():
         try:
             user = User.objects.get(username=username)
         except Exception:
-            return Response("Пользователя с таким именем не существует", status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                "Пользователя с таким именем не существует",
+                status=status.HTTP_404_NOT_FOUND
+            )
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     db_confirmation_code = user.confirmation_code
     if db_confirmation_code != confirmation_code:
-        return Response("Пожалуйста, введите корректный код", status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            "Пожалуйста, введите корректный код",
+            status=status.HTTP_400_BAD_REQUEST
+        )
     else:
         data = get_tokens_for_user(user)
 
@@ -122,3 +129,33 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     pagination_class = PageNumberPagination
     permission_classes = (IsAuthenticated, AdminOnly,)
+
+    @action(
+        detail=False,
+        methods=["get", "patch"],
+        permission_classes=[IsAuthenticated]
+    )
+    def me(self, request, pk=None):
+        if request.method == "GET":
+            serializer = ProfileSerializer(self.request.user, many=False)
+            return Response(serializer.data)
+
+        if request.method == "PATCH":
+            requested_user = self.request.user
+
+            serializer = ProfileSerializer(
+                requested_user,
+                data=request.data,
+                partial=True
+            )
+
+            if serializer.is_valid():
+                if requested_user.role == 'admin':
+                    serializer.save()
+                else:
+                    serializer.save(role=requested_user.role)
+                return Response(serializer.data)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )

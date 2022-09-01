@@ -1,13 +1,7 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import AccessToken
 
-from collections import OrderedDict
-from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 
 from .models import User
-
-
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -26,7 +20,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class GetTokenSerializer(serializers.Serializer):
     """ Сериалайзер для обработки данных при получении токена """
     username = serializers.CharField(required=True)
-    confirmation_code = serializers.CharField(required=True) 
+    confirmation_code = serializers.CharField(required=True)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -46,4 +40,4 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if value == 'me':
             raise serializers.ValidationError('Username не может быть me')
-        return value 
+        return value
