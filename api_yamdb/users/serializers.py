@@ -27,7 +27,10 @@ class GetTokenSerializer(serializers.Serializer):
     token_class = AccessToken
 
     def __init__(self, *args, **kwargs):
+        
         super().__init__(*args, **kwargs)
+        print(args)
+        print(kwargs)
         self.fields[self.username_field] = serializers.CharField()
         self.fields['confirmation_code'] = serializers.CharField()
 
