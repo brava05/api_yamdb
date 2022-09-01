@@ -1,14 +1,11 @@
-
 from api.permissions import AdminOnly
 
 from django.core.mail import send_mail
-from django.utils.crypto import get_random_string
 
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
 
 from .models import User
@@ -17,6 +14,12 @@ from .serializers import (
     ProfileSerializer,
     UserSerializer,
 )
+
+from api_yamdb.settings import EMAIL_BACKEND
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.tokens import default_token_generator 
 
 
 class UserCreateViewSet(generics.CreateAPIView):
@@ -32,30 +35,57 @@ class UserCreateViewSet(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         username = user.get('username')
-        if username == 'me':
-            return Response(
-                "username не может быть me",
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        email = user.get('email')
 
-        confirmation_code = get_random_string(length=32)
+        user = User.objects.get_or_create(
+            username=username,
+            email=email,
+        )[0]
+
+        confirmation_code = default_token_generator.make_token(user)
         send_mail(
             'Confirmation_code',
             f'Ваш код для завершения регистрации:  {confirmation_code}',
-            'from@example.com',
+            EMAIL_BACKEND,
             [request.data.get('email')],
             fail_silently=False,
         )
-
-        serializer.save(confirmation_code=confirmation_code, role='user')
+        user.confirmation_code = confirmation_code
+        user.save()
 
         return Response(request.data, status=status.HTTP_200_OK)
 
 
-class GetTokenView(TokenObtainPairView):
-    """ Вьюсет получения токена auth/token/ """
-    serializer_class = GetTokenSerializer
-    permission_classes = (AllowAny,)
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        'token': str(refresh.access_token),
+    }
+
+
+@api_view(['POST',])
+@permission_classes([AllowAny])
+def GetTokenView(request):
+    serializer = GetTokenSerializer(data=request.data)
+    username = request.data.get("username")
+    confirmation_code = request.data.get("confirmation_code") 
+
+    if serializer.is_valid():
+        try:
+            user = User.objects.get(username=username)
+        except Exception:
+            return Response("Пользователя с таким именем не существует", status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    db_confirmation_code = user.confirmation_code
+    if db_confirmation_code != confirmation_code:
+        return Response("Пожалуйста, введите корректный код", status=status.HTTP_400_BAD_REQUEST)
+    else:
+        data = get_tokens_for_user(user)
+
+        return Response(data)
 
 
 class ProfileView(APIView):
