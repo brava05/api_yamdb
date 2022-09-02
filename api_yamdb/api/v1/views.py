@@ -13,7 +13,6 @@ from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Genre, Review, Category, Title
-from api.permissions import AdminOnly
 from api_yamdb.settings import EMAIL_BACKEND
 from users.models import User
 from .serializers import (GetTokenSerializer, ReviewSerializer,
@@ -21,8 +20,9 @@ from .serializers import (GetTokenSerializer, ReviewSerializer,
                           TitleSerializer, TitleReadSerializer,
                           GenreSerializer, UserSerializer,)
 from .permissions import (IsAdminOrReadOnly,
-                          IsAuthorAdminModeratorOrReadAndPost)
-from .filters import TitleFilter
+                          IsAuthorAdminModeratorOrReadAndPost,
+                          AdminOnly)
+from ..filters import TitleFilter
 
 
 class CreateListViewSet(
