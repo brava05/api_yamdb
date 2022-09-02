@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.utils.translation import gettext_lazy as _
 
 CHOICES = (
     ('user', 'Аутентифицированный пользователь'),
@@ -10,13 +10,31 @@ CHOICES = (
 
 
 class User(AbstractUser):
+
+    SIMPLE_USER = 'user'
+    MODERATOR = 'moderator'
+    ADMINISTRATOR = 'admin'
+    ROLE_CHOICES = [
+        (SIMPLE_USER, 'user'),
+        (MODERATOR, 'moderator'),
+        (ADMINISTRATOR, 'admin'),
+    ]
+
     role = models.CharField(
         'Роль',
+        max_length=50,
         unique=False,
-        max_length=10,
         blank=True,
-        choices=CHOICES
+        choices=ROLE_CHOICES,
+        default=SIMPLE_USER,
     )
+
+    def is_upperclass(self):
+        return self.role in {
+            self.SIMPLE_USER,
+            self.MODERATOR,
+            self.ADMINISTRATOR
+        }
 
     bio = models.TextField(
         'Биография',
@@ -24,10 +42,6 @@ class User(AbstractUser):
     )
 
     email = models.EmailField(unique=True)
-    confirmation_code = models.CharField(
-        max_length=25,
-        blank=True,
-    )
 
     confirmation_code = models.CharField(
         'Код подтверждения',
@@ -36,8 +50,9 @@ class User(AbstractUser):
     )
 
     password = models.CharField(
+        _('password'),
+        max_length=128,
         unique=False,
-        max_length=100,
         blank=True,
     )
 

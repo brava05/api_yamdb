@@ -7,6 +7,7 @@ load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
 # SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
@@ -15,6 +16,7 @@ DEBUG = str(os.getenv('DEBUG'))
 
 ALLOWED_HOSTS = ['*']
 
+EMAIL_BACKEND = 'from@example.com'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -120,6 +122,5 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-# Эмуляция почтового сервера
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
