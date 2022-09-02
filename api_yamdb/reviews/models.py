@@ -1,19 +1,7 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 from users.models import User
-
-
-SCORE_CHOICES = (
-    (1, '1'),
-    (2, '2'),
-    (3, '3'),
-    (4, '4'),
-    (5, '5'),
-    (6, '6'),
-    (7, '7.'),
-    (8, '8.'),
-    (9, '9'),
-    (10, '10'),
-)
 
 
 class Category(models.Model):
@@ -64,13 +52,11 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Произведение'
     )
-    score = models.SmallIntegerField(
-        choices=SCORE_CHOICES,
+    score = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(0),
+                    MaxValueValidator(9)],
         verbose_name='Рейтинг',
     )
-
-    def __str__(self):
-        return f'{self.title} {self.text[:30]}'
 
     class Meta:
         verbose_name = "Отзыв"
@@ -82,6 +68,8 @@ class Review(models.Model):
             ),
         ]
 
+    def __str__(self):
+        return f'{self.title} {self.text[:30]}'
 
 class Comment(models.Model):
     author = models.ForeignKey(
@@ -95,10 +83,20 @@ class Comment(models.Model):
         'Дата добавления', auto_now_add=True, db_index=True
     )
 
+    class Meta:
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"
+
+    def __str__(self):
+        return f'{self.text[:30]}'
+
 
 class TitleGenre(models.Model):
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Жанры произведения"
 
     def __str__(self):
         return f'{self.title} {self.genre}'
