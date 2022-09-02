@@ -231,6 +231,10 @@ class Test05ReviewAPI:
             'text': review_text,
             'score': 10
         }
+        print("___1___")
+        print(titles[0]["id"])
+        print(reviews[0]["id"])
+        print(data)
         response = admin_client.patch(f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[0]["id"]}/', data=data)
         assert response.status_code == 200, (
             'Проверьте, что при PATCH запросе `/api/v1/titles/{title_id}/reviews/{review_id}/` '
