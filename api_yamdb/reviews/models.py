@@ -54,7 +54,7 @@ class Review(models.Model):
     )
     score = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(0),
-                    MaxValueValidator(9)],
+                    MaxValueValidator(10)],
         verbose_name='Рейтинг',
     )
 
@@ -70,6 +70,7 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.title} {self.text[:30]}'
+
 
 class Comment(models.Model):
     author = models.ForeignKey(

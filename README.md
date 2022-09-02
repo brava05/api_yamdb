@@ -21,6 +21,12 @@ pip install -r requirements.txt
 ```BASH
 python3 manage.py migrate
 ```
+
+Все это можно запустить автоматом по команде 
+```BASH
+make setup
+```
+
 Запустить проект:
 ```BASH
 python3 manage.py runserver

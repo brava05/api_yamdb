@@ -4,15 +4,15 @@ from rest_framework import generics, filters, mixins, viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from reviews.models import Genre, Review, Comment, Category, Title
 
+from reviews.models import Genre, Review, Category, Title
 from api.permissions import AdminOnly
 from api_yamdb.settings import EMAIL_BACKEND
 from users.models import User
@@ -20,12 +20,8 @@ from .serializers import (GetTokenSerializer, ReviewSerializer,
                           CommentSerializer, CategorySerializer,
                           TitleSerializer, TitleReadSerializer,
                           GenreSerializer, UserSerializer,)
-from .permissions import (AdminOrReadOnly,
-                          AuthorAdminModeratorOrReadAndPost,
-                          AdminOrReadOnly_Object)
-from .permissions import (IsAdmin,
-                          IsAdminOrReadOnly,
-                          IsAuthorAdminModeratorOrReadOnly)
+from .permissions import (IsAdminOrReadOnly,
+                          IsAuthorAdminModeratorOrReadAndPost)
 from .filters import TitleFilter
 
 
@@ -48,7 +44,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = (AuthorAdminModeratorOrReadAndPost,)
+    permission_classes = (
+        IsAuthorAdminModeratorOrReadAndPost,
+        IsAuthenticatedOrReadOnly,
+    )
     throttle_classes = (AnonRateThrottle,)
     pagination_class = PageNumberPagination
 
@@ -67,7 +66,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     для реализации CRUD-операций c комментариями к отзывам по id.
     """
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
+    permission_classes = (
+        IsAuthorAdminModeratorOrReadAndPost,
+        IsAuthenticatedOrReadOnly
+    )
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
@@ -121,8 +123,9 @@ class TitleViewSet(viewsets.ModelViewSet):
     Получение списка всех произведений.
     Права доступа: Доступно без токена.
     """
-    queryset = Title.objects.annotate(rating=Avg(
-            "reviews__score")).order_by("id")
+    queryset = Title.objects.annotate(
+        rating=Avg("reviews__score")
+    ).order_by("id")
     serializer_class = TitleSerializer
 
     permission_classes = (IsAdminOrReadOnly,)

@@ -1,60 +1,6 @@
 from rest_framework import permissions
 
 
-
-class AuthorAdminModeratorOrReadAndPost(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.method == "POST":
-            return request.user and request.user.is_authenticated
-
-        return True
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        if not request.user.is_authenticated:
-            return False
-
-        return (obj.author == request.user
-                or request.user.role == 'admin'
-                or request.user.role == 'moderator'
-                )
-
-
-class AdminOrReadOnly(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        return (
-            request.method in permissions.SAFE_METHODS
-            or request.user.is_authenticated
-            and request.user.role == 'admin'
-        )
-
-    def has_object_permission(self, request, view, obj):
-
-        if not request.user.is_authenticated:
-            return False
-        return request.user.role == 'admin'
-
-
-class AdminOrReadOnly_Object(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        return (
-            request.method in permissions.SAFE_METHODS
-            or request.user.is_authenticated
-            and request.user.role == 'admin'
-        )
-
-    def has_object_permission(self, request, view, obj):
-        return (
-            request.method in permissions.SAFE_METHODS
-            or request.user.role == 'admin'
-        )
-
-
 class AdminOnly(permissions.BasePermission):
 
     def has_permission(self, request, view):
@@ -70,18 +16,7 @@ class AdminOnly(permissions.BasePermission):
         )
 
 
-class IsAdmin(permissions.BasePermission):
-    """Новый пермишн"""
-    def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated
-            and request.user.role == 'admin'
-        ) or (request.user.is_authenticated
-              and request.user.is_superuser)
-
-
 class IsAdminOrReadOnly(permissions.BasePermission):
-    """Новый пермишн"""
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
@@ -92,8 +27,8 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         )
 
 
-class IsAuthorAdminModeratorOrReadOnly(permissions.BasePermission):
-    """Новый пермишн"""
+class IsAuthorAdminModeratorOrReadAndPost(permissions.BasePermission):
+    """Постить могут все, а исправлять только админы, модераторы и авторы"""
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
