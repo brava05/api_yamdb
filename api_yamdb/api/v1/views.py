@@ -153,10 +153,10 @@ class UserCreateViewSet(generics.CreateAPIView):
         username = user.get('username')
         email = user.get('email')
 
-        user = User.objects.get_or_create(
+        user, _ = User.objects.get_or_create(
             username=username,
             email=email,
-        )[0]
+        )
 
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
@@ -182,32 +182,30 @@ def get_tokens_for_user(user):
 
 @api_view(['POST', ])
 @permission_classes([AllowAny])
-def GetTokenView(request):
+def get_token_view(request):
     serializer = GetTokenSerializer(data=request.data)
     username = request.data.get("username")
     confirmation_code = request.data.get("confirmation_code")
 
-    if serializer.is_valid():
+    if serializer.is_valid(raise_exception=True):
         try:
-            user = User.objects.get(username=username)
+            user = get_object_or_404(User, username=username)
         except Exception:
             return Response(
                 "Пользователя с таким именем не существует",
                 status=status.HTTP_404_NOT_FOUND
             )
     else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    db_confirmation_code = user.confirmation_code
-    if db_confirmation_code != confirmation_code:
+    if user.confirmation_code != confirmation_code:
         return Response(
             "Пожалуйста, введите корректный код",
             status=status.HTTP_400_BAD_REQUEST
         )
-    else:
-        data = get_tokens_for_user(user)
 
-        return Response(data)
+    data = get_tokens_for_user(user)
+    return Response(data)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -228,22 +226,16 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer = UserSerializer(self.request.user, many=False)
             return Response(serializer.data)
 
-        if request.method == "PATCH":
-            requested_user = self.request.user
+        serializer = UserSerializer(
+            self.request.user,
+            data=request.data,
+            partial=True
+        )
 
-            serializer = UserSerializer(
-                requested_user,
-                data=request.data,
-                partial=True
-            )
-
-            if serializer.is_valid():
-                if requested_user.role == 'admin':
-                    serializer.save()
-                else:
-                    serializer.save(role=requested_user.role)
-                return Response(serializer.data)
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if serializer.is_valid(raise_exception=True):
+            if self.request.user.role == User.ADMINISTRATOR:
+                serializer.save()
+            else:
+                serializer.save(role=self.request.user.role)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
