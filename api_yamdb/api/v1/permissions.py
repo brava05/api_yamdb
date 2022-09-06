@@ -6,18 +6,11 @@ class AdminOnly(permissions.BasePermission):
     """
     Права доступа только у админа.
     """
-    # def has_permission(self, request, view):
-    #     return (
-    #         request.user.is_authenticated
-    #         and request.user.role == User.ADMINISTRATOR
-    #         or request.user.is_superuser
-    #     )
-
-
-    def has_object_permission(self, request, view, obj):
+    def has_permission(self, request, view):
         return (
-            request.user.role == User.ADMINISTRATOR
-            or request.user.is_superuser is True
+            request.user.is_authenticated
+            and request.user.role == User.ADMINISTRATOR
+            or request.user.is_superuser
         )
 
 
@@ -35,6 +28,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             or (request.user.is_authenticated
                 and request.user.is_superuser)
         )
+
 
 class IsAuthorAdminModeratorOrReadAndPost(permissions.BasePermission):
     """Постить могут все, а исправлять только админы, модераторы и авторы"""
