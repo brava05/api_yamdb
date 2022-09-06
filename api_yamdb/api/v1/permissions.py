@@ -1,25 +1,40 @@
 from rest_framework import permissions
+from users.models import User
 
 
 class AdminOnly(permissions.BasePermission):
+    """
+    Права доступа только у админа.
+    """
+    # def has_permission(self, request, view):
+    #     return (
+    #         request.user.is_authenticated
+    #         and request.user.role == User.ADMINISTRATOR
+    #         or request.user.is_superuser
+    #     )
 
-    def has_permission(self, request, view):
+
+    def has_object_permission(self, request, view, obj):
         return (
-            request.user.role == 'admin'
+            request.user.role == User.ADMINISTRATOR
             or request.user.is_superuser is True
         )
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
+    """
+    Права доступа:
+    чтение для всех, изменение только для администратора.
+    """
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
             or (request.user.is_authenticated
-                and request.user.role == 'admin')
+                and request.user.role == User.ADMINISTRATOR
+                or request.user.is_superuser)
             or (request.user.is_authenticated
                 and request.user.is_superuser)
         )
-
 
 class IsAuthorAdminModeratorOrReadAndPost(permissions.BasePermission):
     """Постить могут все, а исправлять только админы, модераторы и авторы"""
@@ -32,6 +47,6 @@ class IsAuthorAdminModeratorOrReadAndPost(permissions.BasePermission):
 
         return request.user.is_authenticated and (
             request.user == obj.author
-            or request.user.role == 'moderator'
-            or request.user.role == 'admin'
+            or request.user.role == User.MODERATOR
+            or request.user.role == User.ADMINISTRATOR
         )

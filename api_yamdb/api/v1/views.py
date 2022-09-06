@@ -184,19 +184,12 @@ def get_tokens_for_user(user):
 @permission_classes([AllowAny])
 def get_token_view(request):
     serializer = GetTokenSerializer(data=request.data)
-    username = request.data.get("username")
+    #username = request.data.get("username")
     confirmation_code = request.data.get("confirmation_code")
 
-    if serializer.is_valid(raise_exception=True):
-        try:
-            user = get_object_or_404(User, username=username)
-        except Exception:
-            return Response(
-                "Пользователя с таким именем не существует",
-                status=status.HTTP_404_NOT_FOUND
-            )
-    else:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    user = get_object_or_404(User, username=serializer.validated_data['username'])
 
     if user.confirmation_code != confirmation_code:
         return Response(
