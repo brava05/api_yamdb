@@ -13,11 +13,13 @@ class AdminOnly(permissions.BasePermission):
     #         or request.user.is_superuser
     #     )
 
+
     def has_object_permission(self, request, view, obj):
         return (
             request.user.role == User.ADMINISTRATOR
             or request.user.is_superuser is True
         )
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
